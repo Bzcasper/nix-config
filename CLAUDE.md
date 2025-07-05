@@ -4,9 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a flake-based Nix configuration managing multiple systems:
-- NixOS configurations for Linux headless servers (x86_64-linux)
-- nix-darwin configuration for macOS (aarch64-darwin)
+This is a flake-based Nix configuration managing multiple Linux systems:
+- NixOS configurations for Linux systems (x86_64-linux)
 - Home Manager for user-level configurations
 - Custom packages and overlays
 
@@ -14,7 +13,6 @@ This is a flake-based Nix configuration managing multiple systems:
 
 ### System Rebuild Commands
 - **Linux (NixOS)**: `sudo nixos-rebuild switch --flake ".#$(hostname)"`
-- **macOS (darwin)**: `darwin-rebuild switch --flake ".#$(hostname -s)"`
 - **Shell alias**: `update` (configured in home-manager)
 
 ### Building Packages
@@ -46,9 +44,6 @@ This is a common Nix gotcha - untracked files are invisible to flake evaluation!
 
 2. **Dry-run system changes** (preview without applying):
    ```bash
-   # macOS
-   darwin-rebuild switch --flake ".#$(hostname -s)" --dry-run
-   
    # Linux
    sudo nixos-rebuild switch --flake ".#$(hostname)" --dry-run
    ```
@@ -64,15 +59,14 @@ This is a common Nix gotcha - untracked files are invisible to flake evaluation!
    nix eval .#nixosConfigurations.ultraviolet.config.system.build.toplevel
    nix eval .#nixosConfigurations.bluedesert.config.system.build.toplevel
    nix eval .#nixosConfigurations.echelon.config.system.build.toplevel
-   
-   # Evaluate Darwin configuration
-   nix eval .#darwinConfigurations.cloudbank.config.system.build.toplevel
+   nix eval .#nixosConfigurations.vermissian.config.system.build.toplevel
+   nix eval .#nixosConfigurations.trap-top.config.system.build.toplevel
    ```
 
 5. **Test home-manager changes**:
    ```bash
    # Build home configuration without switching
-   nix build .#homeConfigurations."joshsymonds@$(hostname -s)".activationPackage
+   nix build .#homeConfigurations."joshsymonds@$(hostname)".activationPackage
    ```
 
 ### Testing Workflow
@@ -87,13 +81,13 @@ This is a common Nix gotcha - untracked files are invisible to flake evaluation!
 ### Directory Structure
 - `flake.nix` - Main entry point defining inputs and outputs
 - `hosts/` - System-level configurations
-  - Linux servers: ultraviolet, bluedesert, echelon
-  - macOS: cloudbank
+  - Linux servers: ultraviolet, bluedesert, echelon, vermissian
+  - Business laptop: trap-top (Dell Lenovo 5022)
   - `common.nix` - Shared configuration for Linux servers (NFS mounts)
 - `home-manager/` - User configurations
   - `common.nix` - Shared across all systems
-  - `aarch64-darwin.nix` - macOS-specific
   - `headless-x86_64-linux.nix` - Linux server-specific
+  - `hosts/` - Individual host-specific configurations
   - Application modules (nvim/, zsh/, kitty/, claude-code/, etc.)
 - `pkgs/` - Custom package definitions
 - `overlays/` - Nixpkgs modifications
@@ -108,13 +102,13 @@ This is a common Nix gotcha - untracked files are invisible to flake evaluation!
 5. **Theming**: Consistent Catppuccin Mocha theme across applications
 
 ### System Details
-- **cloudbank** (macOS laptop): Primary development machine with Aerospace window manager
-- **ultraviolet, bluedesert, echelon** (Linux servers): Headless home servers with NFS mounts
+- **trap-top** (Dell Lenovo 5022): Business laptop with Ubuntu 25, 40GB RAM, no discrete GPU
+- **ultraviolet, bluedesert, echelon, vermissian** (Linux servers): Headless home servers with NFS mounts
 
 ### Adding New Systems
 1. Create host configuration in `hosts/<hostname>/default.nix`
-2. Add to `nixosConfigurations` or `darwinConfigurations` in flake.nix
-3. Add hostname to appropriate list in `homeConfigurations` section
+2. Add to `nixosConfigurations` in flake.nix
+3. Add hostname to linuxHosts list in `homeConfigurations` section
 
 ### Custom Package Development
 1. Add package definition to `pkgs/<package>/default.nix`

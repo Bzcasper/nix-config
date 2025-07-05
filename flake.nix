@@ -6,12 +6,6 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.11"; # Keep stable available if needed
 
-    # Darwin
-    darwin = {
-      url = "github:LnL7/nix-darwin";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Home manager
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -28,13 +22,13 @@
     linkpearl.url = "github:Veraticus/linkpearl";
   };
 
-  outputs = { nixpkgs, darwin, home-manager, self, ... }@inputs:
+  outputs = { nixpkgs, home-manager, self, ... }@inputs:
     let
       inherit (self) outputs;
       inherit (nixpkgs) lib;
 
       # Only the systems we actually use
-      systems = [ "x86_64-linux" "aarch64-darwin" ];
+      systems = [ "x86_64-linux" ];
       forAllSystems = f: lib.genAttrs systems f;
 
       # Common special arguments for all configurations
@@ -123,22 +117,19 @@
             }
           ];
         };
-      };
 
-      # Darwin configuration - inlined for clarity
-      darwinConfigurations = {
-        cloudbank = darwin.lib.darwinSystem {
-          system = "aarch64-darwin";
-          specialArgs = mkSpecialArgs "aarch64-darwin";
+        trap-top = lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = mkSpecialArgs "x86_64-linux";
           modules = [
-            ./hosts/cloudbank
-            home-manager.darwinModules.home-manager
+            ./hosts/trap-top
+            home-manager.nixosModules.home-manager
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
-              home-manager.users.joshsymonds = import ./home-manager/aarch64-darwin.nix;
-              home-manager.extraSpecialArgs = mkSpecialArgs "aarch64-darwin" // {
-                hostname = "cloudbank";
+              home-manager.users.joshsymonds = import ./home-manager/hosts/trap-top.nix;
+              home-manager.extraSpecialArgs = mkSpecialArgs "x86_64-linux" // {
+                hostname = "trap-top";
               };
             }
           ];
@@ -158,8 +149,7 @@
             modules = [ module ];
           };
           
-          linuxHosts = [ "ultraviolet" "bluedesert" "echelon" "vermissian" ];
-          darwinHosts = [ "cloudbank" ];
+          linuxHosts = [ "ultraviolet" "bluedesert" "echelon" "vermissian" "trap-top" ];
         in
           (lib.genAttrs 
             (map (h: "joshsymonds@${h}") linuxHosts)
@@ -167,14 +157,6 @@
               mkHome { 
                 system = "x86_64-linux"; 
                 module = ./home-manager/hosts/${hostname}.nix; 
-                inherit hostname;
-              })
-          ) // (lib.genAttrs 
-            (map (h: "joshsymonds@${h}") darwinHosts)
-            (h: let hostname = lib.removePrefix "joshsymonds@" h; in
-              mkHome { 
-                system = "aarch64-darwin"; 
-                module = ./home-manager/aarch64-darwin.nix; 
                 inherit hostname;
               })
           );
