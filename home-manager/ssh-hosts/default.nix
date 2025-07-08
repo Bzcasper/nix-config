@@ -17,8 +17,8 @@
     HOST_IPS[echelon]="192.168.1.200"  # Different subnet
     HOST_TAILSCALE[echelon]="echelon"
     
-    HOST_IPS[cloudbank]="127.0.0.1"  # Local machine
-    HOST_TAILSCALE[cloudbank]=""  # Not on Tailscale
+    HOST_IPS[trap-top]="192.168.1.210"  # Business laptop
+    HOST_TAILSCALE[trap-top]="trap-top"
     
     # Cache for Tailscale status (5 minute TTL)
     TAILSCALE_STATUS_CACHE=""
@@ -89,12 +89,6 @@
       local local_ip="''${HOST_IPS[$hostname]}"
       local tailscale_name="''${HOST_TAILSCALE[$hostname]}"
       local target_host=""
-      
-      # Special case for localhost
-      if [ "$hostname" = "cloudbank" ] || [ "$local_ip" = "127.0.0.1" ]; then
-        echo "🏠 This is the local machine!"
-        return 0
-      fi
       
       # Try Tailscale first if configured for this host
       if [ -n "$tailscale_name" ]; then
@@ -173,8 +167,8 @@
       _smart_connect echelon "$@"
     }
     
-    cloudbank() {
-      _smart_connect cloudbank "$@"
+    trap-top() {
+      _smart_connect trap-top "$@"
     }
     
     # Legacy aliases for compatibility
@@ -216,10 +210,7 @@
         local via=""
         
         # Check connectivity
-        if [ "$host" = "cloudbank" ] || [ "$ip" = "127.0.0.1" ]; then
-          status="🏠"
-          via="local"
-        elif [ -n "$ts_name" ] && echo "$tailscale_hosts" | grep -q "^$ts_name$"; then
+        if [ -n "$ts_name" ] && echo "$tailscale_hosts" | grep -q "^$ts_name$"; then
           if ping -c 1 -W 1 "$ts_name" &> /dev/null; then
             status="🔒"
             via="tailscale"

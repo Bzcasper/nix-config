@@ -1,17 +1,17 @@
 # Josh Symonds' Nix Configuration
 
-This repository contains my personal Nix configuration for managing my Mac laptop and Linux home servers using a declarative, reproducible approach with Nix flakes.
+This repository contains my personal Nix configuration for managing Linux systems using a declarative, reproducible approach with Nix flakes.
 
 ## Overview
 
 This configuration manages:
-- **macOS laptop** (cloudbank) - M-series Mac with nix-darwin
+- **Business laptop** (trap-top) - Dell Lenovo 5022 running Ubuntu 25 (Plucky)
 - **Linux servers** - Multiple headless NixOS home servers:
-  - ultraviolet, bluedesert, echelon
+  - ultraviolet, bluedesert, echelon, vermissian
 
 ## Features
 
-- **Unified Configuration**: Single repository managing both macOS and Linux systems
+- **Unified Configuration**: Single repository managing Linux systems
 - **Modular Design**: Separated system-level and user-level configurations
 - **Consistent Theming**: Catppuccin Mocha theme across all applications
 - **Custom Packages**: Currently includes a customized Caddy web server
@@ -27,9 +27,6 @@ This configuration manages:
 On the target machine, use the `update` alias or run directly:
 
 ```bash
-# macOS
-darwin-rebuild switch --flake ".#$(hostname -s)"
-
 # Linux
 sudo nixos-rebuild switch --flake ".#$(hostname)"
 ```
@@ -51,10 +48,11 @@ nix build .#myCaddy  # Custom Caddy web server
 - `flake.nix` - Main entry point and flake configuration
 - `hosts/` - System-level configurations for each machine
   - `common.nix` - Shared configuration for Linux servers (NFS mounts)
+  - `trap-top/` - Dell Lenovo 5022 business laptop configuration
 - `home-manager/` - User-level dotfiles and application configs
   - `common.nix` - Shared configuration across all systems
-  - `aarch64-darwin.nix` - macOS-specific user configuration
   - `headless-x86_64-linux.nix` - Linux server user configuration
+  - `hosts/` - Individual host-specific home configurations
   - Individual app modules (neovim, zsh, kitty, etc.)
 - `pkgs/` - Custom package definitions
 - `overlays/` - Nixpkgs modifications
@@ -90,8 +88,8 @@ nix build .#myCaddy  # Custom Caddy web server
 
 To add a new system:
 1. Create a configuration in `hosts/<hostname>/`
-2. Add to `flake.nix` under appropriate section (nixosConfigurations or darwinConfigurations)
-3. Add hostname to the appropriate list in homeConfigurations
+2. Add to `flake.nix` under nixosConfigurations section
+3. Add hostname to the linuxHosts list in homeConfigurations
 
 To add a new package:
 1. Create package in `pkgs/<name>/default.nix`
@@ -120,7 +118,7 @@ The Devspace system provides persistent, theme-aware tmux-based development envi
 
 ### Quick Start
 
-From your Mac:
+From your laptop or any Linux system:
 ```bash
 # Connect to a devspace (creates minimal session if needed)
 earth                          # Connect to Earth devspace
@@ -135,7 +133,7 @@ earth                          # Reconnects to existing session
 
 ### Command Reference
 
-#### Connection Commands (from Mac)
+#### Connection Commands (from client)
 ```bash
 earth                          # Connect to devspace (auto-restores if needed)
 mars                          # Each devspace has its own command
@@ -160,7 +158,7 @@ earth worktree list           # List all worktrees for this devspace
 earth worktree clean          # Remove merged worktrees
 ```
 
-#### AWS Credential Sync (from Mac)
+#### AWS Credential Sync (from client)
 ```bash
 devspace-sync-aws             # Sync AWS creds to server (alias: dsa)
 devspace-sync-aws earth       # Sync to specific devspace directory
@@ -268,12 +266,12 @@ earth  # Will auto-restore
 
 ## Remote Link Opening
 
-When SSH'd into a server, links can be opened on your local Mac browser automatically. This is especially useful for AWS SSO authentication.
+When SSH'd into a server, links can be opened on your local browser automatically. This is especially useful for AWS SSO authentication.
 
 ### How it Works
 1. The server sets `BROWSER=remote-link-open`
 2. When applications try to open URLs, they display as clickable links in Kitty
-3. Click the link in your terminal to open it in your Mac browser
+3. Click the link in your terminal to open it in your local browser
 
 ### Example
 ```bash
@@ -291,9 +289,9 @@ See [CLAUDE.md](./CLAUDE.md) for detailed testing procedures. Quick summary:
 nix flake check
 
 # Preview changes
-darwin-rebuild switch --flake ".#$(hostname -s)" --dry-run
+sudo nixos-rebuild switch --flake ".#$(hostname)" --dry-run
 
 # Build specific components
-nix build .#homeConfigurations."joshsymonds@$(hostname -s)".activationPackage
+nix build .#homeConfigurations."joshsymonds@$(hostname)".activationPackage
 ```
 
