@@ -7,7 +7,7 @@
 }:
 let
   # Get cc-tools binaries from the flake
-  cc-tools = inputs.cc-tools.packages.${pkgs.system}.default;
+  # cc-tools = inputs.cc-tools.packages.${pkgs.system}.default;
 in
 {
   # Install Node.js to enable npm
@@ -19,7 +19,7 @@ in
     # FHS environment for running Playwright browsers
     steam-run
     # Include cc-tools binaries
-    cc-tools
+    # cc-tools
   ];
 
   # Add npm global bin to PATH for user-installed packages
@@ -30,7 +30,7 @@ in
   # Set npm prefix to user directory and cc-tools socket path
   home.sessionVariables = {
     NPM_CONFIG_PREFIX = "$HOME/.npm-global";
-    CC_TOOLS_SOCKET = "/run/user/\${UID}/cc-tools.sock";
+    # CC_TOOLS_SOCKET = "/run/user/\${UID}/cc-tools.sock";
   };
 
   # Create and manage ~/.claude directory
@@ -52,9 +52,9 @@ in
       ".claude/CLAUDE.md".source = ./CLAUDE.md;
 
       # Symlinks to cc-tools binaries with cleaner paths
-      ".claude/bin/cc-tools-lint".source = "${cc-tools}/bin/cc-tools-lint";
-      ".claude/bin/cc-tools-test".source = "${cc-tools}/bin/cc-tools-test";
-      ".claude/bin/cc-tools-statusline".source = "${cc-tools}/bin/cc-tools-statusline";
+      # ".claude/bin/cc-tools-lint".source = "${cc-tools}/bin/cc-tools-lint";
+      # ".claude/bin/cc-tools-test".source = "${cc-tools}/bin/cc-tools-test";
+      # ".claude/bin/cc-tools-statusline".source = "${cc-tools}/bin/cc-tools-statusline";
 
       # Notification hook (still needed as separate script)
       ".claude/hooks/ntfy-notifier.sh" = {
