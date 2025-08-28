@@ -126,6 +126,24 @@
             }
           ];
         };
+
+        trapstation = lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = mkSpecialArgs "x86_64-linux";
+          modules = [
+            ./hosts/trapstation/default.nix
+            ./hosts/common.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.users.admin_bobby = import ./home-manager/headless-x86_64-linux.nix;
+              home-manager.extraSpecialArgs = mkSpecialArgs "x86_64-linux" // {
+                hostname = "trapstation";
+              };
+            }
+          ];
+        };
       };
 
       # Darwin configuration - inlined for clarity
@@ -161,7 +179,7 @@
             modules = [ module ];
           };
           
-          linuxHosts = [ "ultraviolet" "bluedesert" "echelon" "vermissian" ];
+          linuxHosts = [ "ultraviolet" "bluedesert" "echelon" "vermissian" "trapstation" ];
           darwinHosts = [ "cloudbank" ];
         in
           (lib.genAttrs 
@@ -180,6 +198,12 @@
                 module = ./home-manager/aarch64-darwin.nix; 
                 inherit hostname;
               })
-          );
+          ) // {
+            "admin_bobby@trapstation" = mkHome {
+              system = "x86_64-linux";
+              module = ./home-manager/headless-x86_64-linux.nix;
+              hostname = "trapstation";
+            };
+          };
     };
 }
