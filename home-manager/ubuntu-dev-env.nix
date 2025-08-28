@@ -23,7 +23,6 @@
     fzf
     
     # Network and system debugging
-    nettools
     inetutils
     tcpdump
     wireshark-cli
