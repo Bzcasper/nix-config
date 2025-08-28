@@ -2,9 +2,6 @@
   # Ubuntu 25.04 specific development environment packages
   
   home.packages = with pkgs; [
-    # Ubuntu-specific system tools
-    ubuntu-drivers-common
-    
     # Development environments
     python311
     python311Packages.pip
